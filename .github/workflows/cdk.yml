@@ -1,4 +1,4 @@
-name: cdk
+name: cdk1
 
 on:
   push:
