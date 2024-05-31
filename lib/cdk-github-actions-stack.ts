@@ -1,16 +1,24 @@
-import * as cdk from 'aws-cdk-lib';
+import { Stack, StackProps } from 'aws-cdk-lib';
+import { EndpointType, LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
+import { Function, Code, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
 
-export class CdkGithubActionsStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+
+export class CdkGithubActionsStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    // AWS Lambdaリソースを定義
+    const helloFunction = new Function(this, 'HelloHandler', {
+      runtime: Runtime.NODEJS_20_X,      // 実行環境を最新のNode.js 20.xに更新
+      code: Code.fromAsset('src/'),      // コードは "src" ディレクトリから読み込む
+      handler: 'lambda/hello.handler'    // ファイルは "hello"、関数は "handler"
+    });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'CdkGithubActionsQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    // API Gateway REST APIリソースを定義し、"hello" 関数をバックエンドに設定
+    new LambdaRestApi(this, 'Endpoint', {
+      handler: helloFunction,
+      endpointTypes: [EndpointType.EDGE],
+    });
   }
 }
